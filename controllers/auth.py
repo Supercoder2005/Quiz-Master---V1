@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, session
+from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db
 from models.user import User
@@ -15,13 +16,12 @@ def login():
         user = User.query.filter_by(email=email).first()
         
         if not user or not user.check_password(password):
-            flash('Please check your login details and try again.')
+            flash('Invalid login details. Please try again.')
             return redirect(url_for('auth.login'))
-        
-        # Store user information in session
-        session['user_id'] = user.id
-        session['is_admin'] = user.is_admin
-        
+
+        # Log in the user using Flask-Login
+        login_user(user)
+
         if user.is_admin:
             return redirect(url_for('admin.dashboard'))
         else:
@@ -37,7 +37,7 @@ def register():
         full_name = request.form.get('full_name')
         qualification = request.form.get('qualification')
         dob_str = request.form.get('dob')
-        
+
         # Check if user already exists
         user = User.query.filter_by(email=email).first()
         if user:
@@ -70,6 +70,7 @@ def register():
     return render_template('auth/register.html')
 
 @auth.route('/logout')
+@login_required
 def logout():
-    session.clear()
+    logout_user()  # Properly log out the user
     return redirect(url_for('auth.login'))

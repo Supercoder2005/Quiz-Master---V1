@@ -4,16 +4,19 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">Welcome, {{ current_user.name }}</h1>
-    
+    <h1 class="mb-4">
+        Welcome, {% if current_user.is_authenticated %} {{ current_user.full_name }} {% else %} Guest {% endif %}
+    </h1>
+
     <div class="row">
+        <!-- Available Quizzes Section -->
         <div class="col-md-8">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Available Quizzes</h5>
                 </div>
                 <div class="card-body">
-                    {% if available_quizzes|length > 0 %}
+                    {% if available_quizzes and available_quizzes|length > 0 %}
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead class="table-light">
@@ -29,11 +32,12 @@
                                 {% for quiz in available_quizzes %}
                                 <tr>
                                     <td>{{ quiz.title }}</td>
-                                    <td>{{ quiz.chapter.subject.name }}</td>
-                                    <td>{{ quiz.chapter.name }}</td>
-                                    <td>{{ quiz.time_limit }} minutes</td>
+                                    <td>{{ quiz.chapter.subject.name if quiz.chapter.subject else 'N/A' }}</td>
+                                    <td>{{ quiz.chapter.name if quiz.chapter else 'N/A' }}</td>
+                                    <td>{{ quiz.time_limit if quiz.time_limit else 'Unlimited' }} minutes</td>
                                     <td>
-                                        <a href="{{ url_for('user.quiz_start', quiz_id=quiz.id) }}" class="btn btn-sm btn-primary">
+                                        <a href="{{ url_for('user.quiz_start', quiz_id=quiz.id) if quiz.id else '#' }}" 
+                                           class="btn btn-sm btn-primary">
                                             <i class="bi bi-play-fill"></i> Start Quiz
                                         </a>
                                     </td>
@@ -50,7 +54,8 @@
                 </div>
             </div>
         </div>
-        
+
+        <!-- User Stats Section -->
         <div class="col-md-4">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-success text-white">
@@ -59,36 +64,40 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-3">
                         <div class="text-center">
-                            <h3>{{ stats.completed }}</h3>
+                            <h3>{{ stats.completed if stats else 0 }}</h3>
                             <p class="text-muted">Quizzes Completed</p>
                         </div>
                         <div class="text-center">
-                            <h3>{{ stats.average_score }}%</h3>
+                            <h3>{{ stats.average_score if stats else 0 }}%</h3>
                             <p class="text-muted">Average Score</p>
                         </div>
                     </div>
-                    <a href="{{ url_for('user.history') }}" class="btn btn-outline-primary w-100">
+                    <a href="{{ url_for('user.history') if 'user.history' in request.url_rule.endpoint else '#' }}" 
+                       class="btn btn-outline-primary w-100">
                         <i class="bi bi-clock-history"></i> View Full History
                     </a>
                 </div>
             </div>
-            
+
+            <!-- Recent Activity Section -->
             <div class="card shadow-sm">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">Recent Activity</h5>
                 </div>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
-                        {% if recent_attempts|length > 0 %}
+                        {% if recent_attempts and recent_attempts|length > 0 %}
                             {% for attempt in recent_attempts %}
                             <li class="list-group-item">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="mb-0">{{ attempt.quiz.title }}</h6>
-                                        <small class="text-muted">{{ attempt.created_at.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                                        <h6 class="mb-0">{{ attempt.quiz.title if attempt.quiz else 'Unknown Quiz' }}</h6>
+                                        <small class="text-muted">
+                                            {{ attempt.created_at.strftime('%b %d, %Y at %I:%M %p') if attempt.created_at else 'N/A' }}
+                                        </small>
                                     </div>
                                     <span class="badge {% if attempt.passed %}bg-success{% else %}bg-danger{% endif %}">
-                                        {{ attempt.score }}%
+                                        {{ attempt.score if attempt.score is not none else 'N/A' }}%
                                     </span>
                                 </div>
                             </li>

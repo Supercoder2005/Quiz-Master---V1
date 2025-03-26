@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, session, jsonify
+from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask_login import login_required, current_user
 from models import db
 from models.subject import Subject
 from models.chapter import Chapter
@@ -7,35 +8,46 @@ from models.question import Question
 from models.score import Score
 from models.user import User
 from datetime import datetime
-import functools
-import json
 
 user = Blueprint('user', __name__, url_prefix='/user')
-
-# User authentication decorator
-def login_required(f):
-    @functools.wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            flash('Please log in to access this page.')
-            return redirect(url_for('auth.login'))
-        return f(*args, **kwargs)
-    return decorated_function
 
 @user.route('/')
 @login_required
 def dashboard():
-    user_id = session.get('user_id')
-    
+    user_id = current_user.id  
+
     # Get user's quiz attempts
     scores = Score.query.filter_by(user_id=user_id).order_by(Score.time_stamp_of_attempt.desc()).all()
-    
+
+    # Calculate user stats
+    completed_quizzes = len(scores)
+    average_score = sum([s.total_scored for s in scores]) / completed_quizzes if completed_quizzes > 0 else 0
+
+    # Create a stats dictionary
+    stats = {
+        "completed": completed_quizzes,
+        "average_score": round(average_score, 2)
+    }
+
     # Get all subjects for navigation
     subjects = Subject.query.all()
-    
+
     return render_template('user/dashboard.html', 
                            scores=scores,
-                           subjects=subjects)
+                           subjects=subjects,
+                           stats=stats,
+                           current_user=current_user)
+
+
+@user.route('/history')
+@login_required
+def history():
+    """View past quiz attempts"""
+    user_id = current_user.id
+    scores = Score.query.filter_by(user_id=user_id).order_by(Score.time_stamp_of_attempt.desc()).all()
+
+    return render_template('user/history.html', scores=scores)
+
 
 @user.route('/subjects')
 @login_required
@@ -89,8 +101,8 @@ def take_quiz(quiz_id):
 @login_required
 def submit_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
-    user_id = session.get('user_id')
-    
+    user_id = current_user.id  
+
     # Get all questions for this quiz
     questions = Question.query.filter_by(quiz_id=quiz_id).all()
     total_questions = len(questions)
@@ -132,7 +144,7 @@ def submit_quiz(quiz_id):
 @user.route('/scores/<int:score_id>')
 @login_required
 def view_score(score_id):
-    user_id = session.get('user_id')
+    user_id = current_user.id  
     score = Score.query.get_or_404(score_id)
     
     # Make sure user can only see their own scores
