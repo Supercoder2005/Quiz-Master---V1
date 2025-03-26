@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header {% if attempt.passed %}bg-success{% else %}bg-danger{% endif %} text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Quiz Results: {{ attempt.quiz.title }}</h4>
+                        <span class="badge bg-white text-{% if attempt.passed %}success{% else %}danger{% endif %} fs-5">
+                            {{ attempt.score }}%
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h5>{{ attempt.quiz.chapter.subject.name }} - {{ attempt.quiz.chapter.name }}</h5>
+                            <p class="text-muted">Completed on {{ attempt.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                            <p>
+                                {% if attempt.passed %}
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle-fill me-2"></i> Congratulations! You passed this quiz.
+                                </div>
+                                {% else %}
+                                <div class="alert alert-danger">
+                                    <i class="bi bi-x-circle-fill me-2"></i> You did not pass this quiz. You needed {{ attempt.quiz.passing_score }}% to pass.
+                                </div>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Correct:</span>
+                                        <span class="badge bg-success">{{ attempt.correct_count }} / {{ attempt.total_questions }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Score:</span>
+                                        <span class="fw-bold">{{ attempt.score }}%</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Time Taken:</span>
+                                        <span>{{ attempt.time_taken }} minutes</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Pass Requirement:</span>
+                                        <span>{{ attempt.quiz.passing_score }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mb-3">Question Review</h5>
+                    
+                    <div class="accordion" id="questionsAccordion">
+                        {% for answer in attempt.answers %}
+                        <div class="accordion-item mb-2 border {% if answer.is_correct %}border-success{% else %}border-danger{% endif %}">
+                            <h2 class="accordion-header" id="heading{{ loop.index }}">
+                                <button class="accordion-button {% if not loop.first %}collapsed{% endif %} {% if answer.is_correct %}bg-success bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}" 
+                                        type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse{{ loop.index }}" 
+                                        aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" 
+                                        aria-controls="collapse{{ loop.index }}">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <span>
+                                            Question {{ loop.index }}
+                                            {% if answer.is_correct %}
+                                            <i class="bi bi-check-circle-fill text-success ms-2"></i>
+                                            {% else %}
+                                            <i class="bi bi-x-circle-fill text-danger ms-2"></i>
+                                            {% endif %}
+                                        </span>
+                                        <span class="badge {% if answer.is_correct %}bg-success{% else %}bg-danger{% endif %} me-3">
+                                            {% if answer.is_correct %}
+                                            {{ answer.question.points }} / {{ answer.question.points }}
+                                            {% else %}
+                                            0 / {{ answer.question.points }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#questionsAccordion">
+                                <div class="accordion-body">
+                                    <p class="fs-5 mb-3">{{ answer.question.text }}</p>
+                                    
+                                    <div class="mb-3">
+                                        <h6>Options:</h6>
+                                        {% for option in answer.question.options %}
+                                        <div class="card mb-2 {% if option.is_correct %}border-success{% endif %} {% if option.id == answer.selected_option_id and not option.is_correct %}border-danger{% endif %}">
+                                            <div class="card-body py-2 {% if option.is_correct %}bg-success bg-opacity-10{% endif %} {% if option.id == answer.selected_option_id and not option.is_correct %}bg-danger bg-opacity-10{% endif %}">
+                                                <div class="d-flex align-items-center">
+                                                    {% if option.id == answer.selected_option_id %}
+                                                    <i class="bi bi-check-circle-fill {% if option.is_correct %}text-success{% else %}text-danger{% endif %} me-2"></i>
+                                                    <span>Your answer: {{ option.text }}</span>
+                                                    {% elif option.is_correct %}
+                                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                    <span>Correct answer: {{ option.text }}</span>
+                                                    {% else %}
+                                                    <i class="bi bi-circle me-2 text-muted"></i>
+                                                    <span>{{ option.text }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    {% if answer.question.explanation %}
+                                    <div class="alert alert-info">
+                                        <h6 class="mb-2">Explanation:</h6>
+                                        <p>{{ answer.question.explanation }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('student.view_quiz', quiz_id=attempt.quiz.id) }}" class="btn btn-primary">
+                            <i class="bi bi-arrow-repeat me-1"></i> Retake Quiz
+                        </a>
+                        <a href="{{ url_for('student.view_chapter', chapter_id=attempt.quiz.chapter.id) }}" class="btn btn-secondary">
+                            <i class="bi bi-book me-1"></i> Back to Chapter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

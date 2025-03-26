@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.title }} - Start{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{{ quiz.title }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h5>Are you ready to begin?</h5>
+                        <p class="lead">You're about to start the quiz on {{ quiz.chapter.name }} from {{ quiz.chapter.subject.name }}</p>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-square rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                            <i class="bi bi-question-circle fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-0">{{ quiz.questions|length }}</h5>
+                                            <p class="mb-0 text-muted">Questions</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-square rounded-circle bg-warning text-white d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                            <i class="bi bi-clock fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-0">{{ quiz.time_limit }}</h5>
+                                            <p class="mb-0 text-muted">Minutes</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Important Information</h5>
+                        <hr>
+                        <p>Please read the following instructions before starting the quiz:</p>
+                        <ul>
+                            <li>This quiz contains {{ quiz.questions|length }} multiple-choice questions.</li>
+                            <li>You will have {{ quiz.time_limit }} minutes to complete the quiz.</li>
+                            <li>You must score at least {{ quiz.passing_score }}% to pass.</li>
+                            <li>Once you start, the timer cannot be paused.</li>
+                            <li>Make sure you have a stable internet connection.</li>
+                            <li>Do not refresh the page during the quiz.</li>
+                        </ul>
+                    </div>
+                    
+                    <form action="{{ url_for('user.quiz_start', quiz_id=quiz.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-lg btn-success">
+                                <i class="bi bi-play-fill me-2"></i>Start Quiz Now
+                            </button>
+                            <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

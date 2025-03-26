@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz Statistics{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Quiz Statistics</h2>
+    <table class="table table-bordered mt-4">
+        <thead class="table-dark">
+            <tr>
+                <th>Quiz ID</th>
+                <th>Chapter</th>
+                <th>Total Attempts</th>
+                <th>Average Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stat in statistics %}
+            <tr>
+                <td>{{ stat.quiz_id }}</td>
+                <td>{{ stat.chapter_name }}</td>
+                <td>{{ stat.total_attempts }}</td>
+                <td>{{ stat.average_score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

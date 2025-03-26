@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Welcome, {{ current_user.name }}</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Available Quizzes</h5>
+                </div>
+                <div class="card-body">
+                    {% if available_quizzes|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Quiz</th>
+                                    <th>Subject</th>
+                                    <th>Chapter</th>
+                                    <th>Time Limit</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for quiz in available_quizzes %}
+                                <tr>
+                                    <td>{{ quiz.title }}</td>
+                                    <td>{{ quiz.chapter.subject.name }}</td>
+                                    <td>{{ quiz.chapter.name }}</td>
+                                    <td>{{ quiz.time_limit }} minutes</td>
+                                    <td>
+                                        <a href="{{ url_for('user.quiz_start', quiz_id=quiz.id) }}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-play-fill"></i> Start Quiz
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No quizzes are currently available. Check back later!
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Your Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="text-center">
+                            <h3>{{ stats.completed }}</h3>
+                            <p class="text-muted">Quizzes Completed</p>
+                        </div>
+                        <div class="text-center">
+                            <h3>{{ stats.average_score }}%</h3>
+                            <p class="text-muted">Average Score</p>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('user.history') }}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-clock-history"></i> View Full History
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% if recent_attempts|length > 0 %}
+                            {% for attempt in recent_attempts %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">{{ attempt.quiz.title }}</h6>
+                                        <small class="text-muted">{{ attempt.created_at.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                                    </div>
+                                    <span class="badge {% if attempt.passed %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ attempt.score }}%
+                                    </span>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item">
+                                <p class="text-center my-2">No recent activity</p>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

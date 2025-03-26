@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Admin Dashboard</h2>
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Manage Users</h5>
+                    <p class="card-text">View, search, and manage registered users.</p>
+                    <a href="{{ url_for('manage_users') }}" class="btn btn-light">Go</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Manage Subjects</h5>
+                    <p class="card-text">Create, edit, and delete subjects.</p>
+                    <a href="{{ url_for('manage_subjects') }}" class="btn btn-light">Go</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Manage Chapters</h5>
+                    <p class="card-text">Add, edit, and delete chapters.</p>
+                    <a href="{{ url_for('manage_chapters') }}" class="btn btn-light">Go</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Manage Quizzes</h5>
+                    <p class="card-text">Create and manage quizzes.</p>
+                    <a href="{{ url_for('manage_quizzes') }}" class="btn btn-light">Go</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title">View Statistics</h5>
+                    <p class="card-text">Check overall statistics and performance charts.</p>
+                    <a href="{{ url_for('view_statistics') }}" class="btn btn-light">Go</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
