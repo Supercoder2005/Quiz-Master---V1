@@ -505,7 +505,9 @@ def delete_chapter(id):
 @admin.route('/quizzes')
 @admin_required
 def manage_quizzes():
-    return render_template('admin/manage_quizzes.html', quizzes=Quiz.query.all())
+    quizzes=Quiz.query.all()
+    chapter_id = quizzes[0].chapter_id if quizzes else 1
+    return render_template('admin/manage_quizzes.html', quizzes=quizzes,chapter_id = chapter_id)
 
 @admin.route('/chapters/<int:chapter_id>/quizzes/create', methods=['GET', 'POST'])
 @admin_required
