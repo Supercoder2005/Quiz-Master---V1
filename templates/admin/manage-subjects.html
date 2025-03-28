@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mt-5">
     <h2 class="text-center">Manage Subjects</h2>
-    <a href="{{ url_for('add_subject') }}" class="btn btn-primary mb-3">Add New Subject</a>
+    <a href="{{ url_for('admin.create_subject') }}" class="btn btn-primary mb-3">Add New Subject</a>
     <table class="table table-bordered">
         <thead class="table-dark">
             <tr>
@@ -22,8 +22,10 @@
                 <td>{{ subject.name }}</td>
                 <td>{{ subject.description }}</td>
                 <td>
-                    <a href="{{ url_for('edit_subject', subject_id=subject.id) }}" class="btn btn-warning btn-sm">Edit</a>
-                    <a href="{{ url_for('delete_subject', subject_id=subject.id) }}" class="btn btn-danger btn-sm">Delete</a>
+                    <a href="{{ url_for('admin.edit_subject', subject_id=subject.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                    <form action="{{ url_for('admin.delete_subject', id=subject.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}

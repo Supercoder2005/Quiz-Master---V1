@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Login{% endblock %} 
 
 {% block content %}
 <div class="container mt-5">
@@ -22,7 +22,13 @@
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Login</button>
                     </form>
+
+                    <!-- Admin Login Button -->
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('auth.admin_login') }}" class="btn btn-danger w-100">Admin Login</a>
+                    </div>
                 </div>
+                
                 <div class="card-footer text-center">
                     <small>Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a></small>
                 </div>
