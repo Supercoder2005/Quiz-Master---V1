@@ -3,35 +3,144 @@
 {% block title %}Manage Quizzes{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="text-center">Manage Quizzes</h2>
-    <a href="{{ url_for('admin.create_quiz',chapter_id=chapter_id) }}" class="btn btn-primary mb-3">Create New Quiz</a>
-    <table class="table table-bordered">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Chapter</th>
-                <th>Date</th>
-                <th>Duration</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for quiz in quizzes %}
-            <tr>
-                <td>{{ quiz.id }}</td>
-                <td>{{ quiz.chapter.name if quiz.chapter else 'N/A' }}</td>
-                <td>{{ quiz.date_of_quiz.strftime('%Y-%m-%d') if quiz.date_of_quiz else 'N/A' }}</td>
-                <td>{{ quiz.time_duration.strftime('%H:%M') if quiz.time_duration else 'N/A' }}</td>
-                <td>
-                    <a href="{{ url_for('admin.edit_quiz',id=quiz.id) }}" class="btn btn-warning btn-sm">Edit</a>
-                    <form action="{{ url_for('admin.delete_quiz',id=quiz.id) }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </td>
-            </tr>
+<div class="container mt-4">
+    <h2 class="mb-4">Manage Quizzes</h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             {% endfor %}
-        </tbody>
-    </table>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Create Quiz Button -->
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createQuizModal">Create New Quiz</button>
+
+    <!-- Quizzes List -->
+    {% for quiz in quizzes %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ quiz.title }}</h5>
+            <p class="card-text">{{ quiz.description }}</p>
+            <p><strong>Date:</strong> {{ quiz.date_of_quiz }} | <strong>Duration:</strong> {{ quiz.time_duration }}</p>
+
+            <!-- Edit & Delete Quiz Buttons -->
+            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editQuizModal{{ quiz.id }}">Edit</button>
+            <form action="{{ url_for('admin.delete_quiz', quiz_id=quiz.id) }}" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+            </form>
+
+            <!-- Add Question Button -->
+            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addQuestionModal{{ quiz.id }}">Add Question</button>
+
+            <!-- Questions List -->
+            <h6 class="mt-3">Questions:</h6>
+            <ul class="list-group">
+                {% for question in quiz.questions %}
+                <li class="list-group-item">
+                    <p class="mb-1"><strong>Q:</strong> {{ question.question_statement }}</p>
+                    <ul class="mb-2">
+                        <li>A. {{ question.option1 }}</li>
+                        <li>B. {{ question.option2 }}</li>
+                        <li>C. {{ question.option3 }}</li>
+                        <li>D. {{ question.option4 }}</li>
+                    </ul>
+                    <p class="text-success"><strong>Correct Answer:</strong> Option {{ question.correct_option }}</p>
+                    <form action="{{ url_for('admin.remove_question', question_id=question.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this question?')">Remove</button>
+                    </form>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No questions added yet.</li>
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+
+    <!-- Edit Quiz Modal -->
+    <div class="modal fade" id="editQuizModal{{ quiz.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Quiz</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('admin.edit_quiz', quiz_id=quiz.id) }}" method="POST">
+                    <div class="modal-body">
+                        <input type="text" class="form-control mb-2" name="title" value="{{ quiz.title }}" required>
+                        <textarea class="form-control mb-2" name="description">{{ quiz.description }}</textarea>
+                        <input type="date" class="form-control mb-2" name="date_of_quiz" value="{{ quiz.date_of_quiz }}" required>
+                        <input type="time" class="form-control mb-2" name="time_duration" value="{{ quiz.time_duration }}" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Question Modal -->
+    <div class="modal fade" id="addQuestionModal{{ quiz.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Question</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('admin.add_question', quiz_id=quiz.id) }}" method="POST">
+                    <div class="modal-body">
+                        <textarea class="form-control mb-2" name="question_statement" placeholder="Question" required></textarea>
+                        <input type="text" class="form-control mb-2" name="option1" placeholder="Option 1" required>
+                        <input type="text" class="form-control mb-2" name="option2" placeholder="Option 2" required>
+                        <input type="text" class="form-control mb-2" name="option3" placeholder="Option 3" required>
+                        <input type="text" class="form-control mb-2" name="option4" placeholder="Option 4" required>
+                        <select class="form-control mb-2" name="correct_option" required>
+                            <option value="" disabled selected>Correct Option</option>
+                            <option value="1">Option 1</option>
+                            <option value="2">Option 2</option>
+                            <option value="3">Option 3</option>
+                            <option value="4">Option 4</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Add Question</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Create Quiz Modal -->
+    <div class="modal fade" id="createQuizModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Quiz</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('admin.create_quiz') }}" method="POST">
+                    <div class="modal-body">
+                        <input type="number" class="form-control mb-2" name="chapter_id" placeholder="Chapter ID" required>
+                        <input type="text" class="form-control mb-2" name="title" placeholder="Title" required>
+                        <textarea class="form-control mb-2" name="description" placeholder="Description"></textarea>
+                        <input type="date" class="form-control mb-2" name="date_of_quiz" required>
+                        <input type="time" class="form-control mb-2" name="time_duration" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Create Quiz</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

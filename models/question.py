@@ -20,7 +20,7 @@ class Question(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
-    text = db.Column(db.Text, nullable=False)  # Renamed from question_statement
+    question_statement = db.Column(db.Text, nullable=False)  
     option1 = db.Column(db.Text, nullable=False)
     option2 = db.Column(db.Text, nullable=False)
     option3 = db.Column(db.Text, nullable=False)
