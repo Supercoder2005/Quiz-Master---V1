@@ -421,51 +421,103 @@ def get_or_404(model, id):
     return model.query.get_or_404(id)
 
 # CRUD Operations for Subjects
+# @admin.route('/subjects')
+# @admin_required
+# def subjects():
+#     return render_template('admin/subjects.html', subjects=Subject.query.all())
+
+# @admin.route('/subjects/create', methods=['GET', 'POST'])
+# @admin_required
+# def create_subject():
+#     if request.method == 'POST':
+#         name, description = request.form.get('name'), request.form.get('description')
+#         if not name:
+#             flash('Subject name is required!')
+#             return redirect(url_for('admin.create_subject'))
+#         db.session.add(Subject(name=name, description=description))
+#         db.session.commit()
+#         flash('Subject created successfully!')
+#         return redirect(url_for('admin.subjects'))
+#     return render_template('admin/create_subject.html')
+
+# @admin.route('/subjects/<int:id>/edit', methods=['GET', 'POST'])
+# @admin_required
+# def edit_subject(id):
+#     subject = get_or_404(Subject, id)
+#     if request.method == 'POST':
+#         subject.name, subject.description = request.form.get('name'), request.form.get('description')
+#         db.session.commit()
+#         flash('Subject updated successfully!')
+#         return redirect(url_for('admin.subjects'))
+#     return render_template('admin/edit_subject.html', subject=subject)
+
+# @admin.route('/subjects/<int:id>/delete', methods=['POST'])
+# @admin_required
+# def delete_subject(id):
+#     db.session.delete(get_or_404(Subject, id))
+#     db.session.commit()
+#     flash('Subject deleted successfully!')
+#     return redirect(url_for('admin.subjects')) 
+
+# CRUD Operations for Subjects
 @admin.route('/subjects')
 @admin_required
 def subjects():
+    """Renders the subjects management page."""
     return render_template('admin/subjects.html', subjects=Subject.query.all())
 
-@admin.route('/subjects/create', methods=['GET', 'POST'])
+@admin.route('/subjects/create', methods=['POST'])
 @admin_required
 def create_subject():
-    if request.method == 'POST':
-        name, description = request.form.get('name'), request.form.get('description')
-        if not name:
-            flash('Subject name is required!')
-            return redirect(url_for('admin.create_subject'))
-        db.session.add(Subject(name=name, description=description))
-        db.session.commit()
-        flash('Subject created successfully!')
+    """Handles subject creation from the same page."""
+    name, description = request.form.get('name'), request.form.get('description')
+    if not name:
+        flash('Subject name is required!', 'danger')
         return redirect(url_for('admin.subjects'))
-    return render_template('admin/create_subject.html')
 
-@admin.route('/subjects/<int:id>/edit', methods=['GET', 'POST'])
+    new_subject = Subject(name=name, description=description)
+    db.session.add(new_subject)
+    db.session.commit()
+    flash('Subject created successfully!', 'success')
+
+    return redirect(url_for('admin.subjects'))
+
+@admin.route('/subjects/<int:id>/edit', methods=['POST'])
 @admin_required
 def edit_subject(id):
+    """Handles subject editing from the same page."""
     subject = get_or_404(Subject, id)
-    if request.method == 'POST':
-        subject.name, subject.description = request.form.get('name'), request.form.get('description')
-        db.session.commit()
-        flash('Subject updated successfully!')
-        return redirect(url_for('admin.subjects'))
-    return render_template('admin/edit_subject.html', subject=subject)
+    subject.name, subject.description = request.form.get('name'), request.form.get('description')
+    db.session.commit()
+    flash('Subject updated successfully!', 'success')
+
+    return redirect(url_for('admin.subjects'))
 
 @admin.route('/subjects/<int:id>/delete', methods=['POST'])
 @admin_required
 def delete_subject(id):
-    db.session.delete(get_or_404(Subject, id))
+    """Deletes a subject and redirects to the manage page."""
+    subject = get_or_404(Subject, id)
+    db.session.delete(subject)
     db.session.commit()
-    flash('Subject deleted successfully!')
+    flash('Subject deleted successfully!', 'success')
+
     return redirect(url_for('admin.subjects'))
+
 
 # CRUD Operations for Chapters
 @admin.route('/subjects/<int:subject_id>/chapters')
 @admin_required
 def chapters(subject_id):
-    return render_template('admin/chapters.html', 
-                           subject=get_or_404(Subject, subject_id),
-                           chapters=Chapter.query.filter_by(subject_id=subject_id).all())
+    subject = Subject.query.get(subject_id)
+    if not subject:
+        flash('Invalid Subject ID!')
+        return redirect(url_for('admin.dashboard'))  # Redirect to a safe page
+    return render_template('admin/chapters.html', subject=subject, chapters=Chapter.query.filter_by(subject_id=subject_id).all())
+# def chapters(subject_id):
+#     return render_template('admin/chapters.html', 
+#                            subject=get_or_404(Subject, subject_id),
+#                            chapters=Chapter.query.filter_by(subject_id=subject_id).all())
 
 @admin.route('/subjects/<int:subject_id>/chapters/create', methods=['GET', 'POST'])
 @admin_required
@@ -492,7 +544,7 @@ def edit_chapter(id):
         return redirect(url_for('admin.chapters', subject_id=chapter.subject_id))
     return render_template('admin/edit_chapter.html', chapter=chapter)
 
-@admin.route('/chapters/<int:id>/delete', methods=['POST'])
+@admin.route('/chapters/<int:id>/delete', methods=['GET','POST'])
 @admin_required
 def delete_chapter(id):
     chapter = get_or_404(Chapter, id)
