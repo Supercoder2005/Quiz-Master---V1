@@ -505,53 +505,150 @@ def delete_subject(id):
     return redirect(url_for('admin.subjects'))
 
 
-# CRUD Operations for Chapters
-@admin.route('/subjects/<int:subject_id>/chapters')
-@admin_required
-def chapters(subject_id):
-    subject = Subject.query.get(subject_id)
-    if not subject:
-        flash('Invalid Subject ID!')
-        return redirect(url_for('admin.dashboard'))  # Redirect to a safe page
-    return render_template('admin/chapters.html', subject=subject, chapters=Chapter.query.filter_by(subject_id=subject_id).all())
+# # CRUD Operations for Chapters
+# @admin.route('/subjects/<int:subject_id>/chapters')
+# @admin_required
 # def chapters(subject_id):
-#     return render_template('admin/chapters.html', 
-#                            subject=get_or_404(Subject, subject_id),
-#                            chapters=Chapter.query.filter_by(subject_id=subject_id).all())
+#     subject = Subject.query.get(subject_id)
+#     if not subject:
+#         flash('Invalid Subject ID!')
+#         return redirect(url_for('admin.dashboard'))  # Redirect to a safe page
+#     return render_template('admin/chapters.html', subject=subject, chapters=Chapter.query.filter_by(subject_id=subject_id).all())
+# # def chapters(subject_id):
+# #     return render_template('admin/chapters.html', 
+# #                            subject=get_or_404(Subject, subject_id),
+# #                            chapters=Chapter.query.filter_by(subject_id=subject_id).all())
 
-@admin.route('/subjects/<int:subject_id>/chapters/create', methods=['GET', 'POST'])
+# @admin.route('/subjects/<int:subject_id>/chapters/create', methods=['GET', 'POST'])
+# @admin_required
+# def create_chapter(subject_id):
+#     if request.method == 'POST':
+#         name, description = request.form.get('name'), request.form.get('description')
+#         if not name:
+#             flash('Chapter name is required!')
+#             return redirect(url_for('admin.create_chapter', subject_id=subject_id))
+#         db.session.add(Chapter(subject_id=subject_id, name=name, description=description))
+#         db.session.commit()
+#         flash('Chapter created successfully!')
+#         return redirect(url_for('admin.chapters', subject_id=subject_id))
+#     return render_template('admin/create_chapter.html', subject=get_or_404(Subject, subject_id))
+
+# @admin.route('/chapters/<int:id>/edit', methods=['GET', 'POST'])
+# @admin_required
+# def edit_chapter(id):
+#     chapter = get_or_404(Chapter, id)
+#     if request.method == 'POST':
+#         chapter.name, chapter.description = request.form.get('name'), request.form.get('description')
+#         db.session.commit()
+#         flash('Chapter updated successfully!')
+#         return redirect(url_for('admin.chapters', subject_id=chapter.subject_id))
+#     return render_template('admin/edit_chapter.html', chapter=chapter)
+
+# @admin.route('/chapters/<int:id>/delete', methods=['GET','POST'])
+# @admin_required
+# def delete_chapter(id):
+#     chapter = get_or_404(Chapter, id)
+#     db.session.delete(chapter)
+#     db.session.commit()
+#     flash('Chapter deleted successfully!')
+#     return redirect(url_for('admin.chapters', subject_id=chapter.subject_id)) 
+
+# CRUD Operations for Chapters
+# @admin.route('/subjects/<int:subject_id>/chapters', methods=['GET'])
+# @admin_required
+# def chapters(subject_id):
+#     subject = Subject.query.get_or_404(subject_id)
+#     chapter_id = request.args.get('chapter_id')
+#     chapter = Chapter.query.get(chapter_id) if chapter_id else None
+#     return render_template('admin/chapters.html', subject=subject, chapters=Chapter.query.filter_by(subject_id=subject_id).all(), chapter=chapter)
+
+
+# @admin.route('/subjects/<int:subject_id>/chapters/create', methods=['POST'])
+# @admin_required
+# def create_chapter(subject_id):
+#     name, description = request.form.get('name'), request.form.get('description')
+#     if not name:
+#         flash('Chapter name is required!', 'danger')
+#         return redirect(url_for('admin.chapters', subject_id=subject_id))
+
+#     new_chapter = Chapter(subject_id=subject_id, name=name, description=description)
+#     db.session.add(new_chapter)
+#     db.session.commit()
+#     flash('Chapter created successfully!', 'success')
+#     return redirect(url_for('admin.chapters', subject_id=subject_id))
+
+
+# @admin.route('/chapters/<int:id>/edit', methods=['POST'])
+# @admin_required
+# def edit_chapter(id):
+#     chapter = Chapter.query.get_or_404(id)
+#     chapter.name = request.form.get('name')
+#     chapter.description = request.form.get('description')
+#     db.session.commit()
+#     flash('Chapter updated successfully!', 'success')
+#     return redirect(url_for('admin.chapters', subject_id=chapter.subject_id))
+
+
+# @admin.route('/chapters/<int:id>/delete', methods=['POST'])
+# @admin_required
+# def delete_chapter(id):
+#     chapter = Chapter.query.get_or_404(id)
+#     subject_id = chapter.subject_id
+#     db.session.delete(chapter)
+#     db.session.commit()
+#     flash('Chapter deleted successfully!', 'success')
+#     return redirect(url_for('admin.chapters', subject_id=subject_id))
+
+# Manage Chapters Page - Shows all subjects with chapters under them
+@admin.route('/chapters')
+@admin_required
+def chapters():
+    subjects = Subject.query.all()  # Fetch all subjects with chapters
+    return render_template('admin/chapters.html', subjects=subjects)
+
+
+# Create Chapter (Form is submitted via the modal)
+@admin.route('/subjects/<int:subject_id>/chapters/create', methods=['POST'])
 @admin_required
 def create_chapter(subject_id):
-    if request.method == 'POST':
-        name, description = request.form.get('name'), request.form.get('description')
-        if not name:
-            flash('Chapter name is required!')
-            return redirect(url_for('admin.create_chapter', subject_id=subject_id))
-        db.session.add(Chapter(subject_id=subject_id, name=name, description=description))
-        db.session.commit()
-        flash('Chapter created successfully!')
-        return redirect(url_for('admin.chapters', subject_id=subject_id))
-    return render_template('admin/create_chapter.html', subject=get_or_404(Subject, subject_id))
+    name = request.form.get('name')
+    description = request.form.get('description')
 
-@admin.route('/chapters/<int:id>/edit', methods=['GET', 'POST'])
+    if not name:
+        flash('Chapter name is required!', 'danger')
+        return redirect(url_for('admin.chapters'))
+
+    new_chapter = Chapter(subject_id=subject_id, name=name, description=description)
+    db.session.add(new_chapter)
+    db.session.commit()
+    flash('Chapter added successfully!', 'success')
+    return redirect(url_for('admin.chapters'))
+
+
+# Edit Chapter
+@admin.route('/chapters/<int:id>/edit', methods=['POST'])
 @admin_required
 def edit_chapter(id):
     chapter = get_or_404(Chapter, id)
-    if request.method == 'POST':
-        chapter.name, chapter.description = request.form.get('name'), request.form.get('description')
-        db.session.commit()
-        flash('Chapter updated successfully!')
-        return redirect(url_for('admin.chapters', subject_id=chapter.subject_id))
-    return render_template('admin/edit_chapter.html', chapter=chapter)
+    chapter.name = request.form.get('name')
+    chapter.description = request.form.get('description')
+    db.session.commit()
+    flash('Chapter updated successfully!')
+    return redirect(url_for('admin.chapters', subject_id=chapter.subject_id))
 
-@admin.route('/chapters/<int:id>/delete', methods=['GET','POST'])
+
+
+
+# Delete Chapter
+@admin.route('/chapters/<int:id>/delete', methods=['POST'])
 @admin_required
 def delete_chapter(id):
-    chapter = get_or_404(Chapter, id)
+    chapter = Chapter.query.get_or_404(id)
     db.session.delete(chapter)
     db.session.commit()
-    flash('Chapter deleted successfully!')
-    return redirect(url_for('admin.chapters', subject_id=chapter.subject_id))
+    flash('Chapter deleted successfully!', 'success')
+    return redirect(url_for('admin.chapters'))
+
 
 #CRUD operation for quizes
 @admin.route('/quizzes')
